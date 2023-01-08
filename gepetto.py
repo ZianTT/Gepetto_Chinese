@@ -36,20 +36,20 @@ class GepettoPlugin(idaapi.plugin_t):
 
         # Function explaining action
         explain_action = idaapi.action_desc_t(self.explain_action_name,
-                                              'Explain function',
+                                              '解释函数',
                                               ExplainHandler(),
                                               "Ctrl+Alt+G",
-                                              'Use davinci-003 to explain the currently selected function',
+                                              '使用 davinci-003 解释当前选择的函数',
                                               199)
         idaapi.register_action(explain_action)
         idaapi.attach_action_to_menu(self.explain_menu_path, self.explain_action_name, idaapi.SETMENU_APP)
 
         # Variable renaming action
         rename_action = idaapi.action_desc_t(self.rename_action_name,
-                                             'Rename variables',
+                                             '重命名变量',
                                              RenameHandler(),
                                              "Ctrl+Alt+R",
-                                             "Use davinci-003 to rename this function's variables",
+                                             "使用 davinci-003 重命名函数的变量",
                                              199)
         idaapi.register_action(rename_action)
         idaapi.attach_action_to_menu(self.rename_menu_path, self.rename_action_name, idaapi.SETMENU_APP)
@@ -113,7 +113,7 @@ class ExplainHandler(idaapi.action_handler_t):
     def activate(self, ctx):
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
-        query_model_async("Can you explain what the following C function does and suggest a better name for it?\n"
+        query_model_async("你能解释一下下面的C函数是做什么的，并为它取一个更好的名字吗?\n"
                           + str(decompiler_output),
                           functools.partial(comment_callback, address=idaapi.get_screen_ea(), view=v))
         return 1
@@ -134,15 +134,15 @@ def rename_callback(address, view, response):
     """
     j = re.search(r"\{[^}]*?\}", response)
     if not j:
-        print(f"Cannot extract valid JSON from the response. Asking the model to fix it...")
-        query_model_async("The JSON document provided in this response is invalid. Can you fix it?\n" + response,
+        print(f"无法从响应中提取有效的JSON。正在使其修复…")
+        query_model_async("此响应中提供的JSON是无效的。你能修复吗?\n" + response,
                           functools.partial(rename_callback, address=idaapi.get_screen_ea(), view=view))
         return
     try:
         names = json.loads(j.group(0))
     except json.decoder.JSONDecodeError:
-        print(f"The JSON document returned is invalid. Asking the model to fix it...")
-        query_model_async("Please fix the following JSON document:\n" + j.group(0),
+        print(f"返回的JSON无效。正在使其修复…")
+        query_model_async("请修复以下JSON:\n" + j.group(0),
                           functools.partial(rename_callback, address=idaapi.get_screen_ea(), view=view))
         return
 
@@ -179,10 +179,10 @@ class RenameHandler(idaapi.action_handler_t):
     def activate(self, ctx):
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
-        query_model_async("Analyze the following C function:\n" + str(decompiler_output) +
-                            "\nSuggest better variable names, reply with a JSON array where keys are the original names"
-                            "and values are the proposed names. Do not explain anything, only print the JSON "
-                            "dictionary.",
+        query_model_async("分析下面的C函数:\n" + str(decompiler_output) +
+                            "\n建议更好的变量名，回复一个JSON数组，其中键是原始名称，"
+                            "值是建议的名称。不解释任何事情，只输出JSON"
+                            "字典.",
                           functools.partial(rename_callback, address=idaapi.get_screen_ea(), view=v))
         return 1
 
