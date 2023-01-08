@@ -1,5 +1,8 @@
 # Gepetto
 
+## EN: This Edition was translated to Chinese by ZianTT
+## CN: 此版本已由ZianTT翻译为中文
+
 Gepetto is a Python script which uses OpenAI's davinci-003 model to provide meaning to functions decompiled by IDA Pro.
 At the moment, it can ask davinci-003 to explain what a function does, and to automatically rename its variables.
 Here is a simple example of what results it can provide in mere seconds:
